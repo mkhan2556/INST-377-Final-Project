@@ -1,8 +1,8 @@
 import { createClient } from "@supabase/supabase-js";
 
 const supabase = createClient(
-  "https://ltqaugjddzsfaenqfump.supabase.co",
-  "YOUR_KEY"
+  process.env.SUPABASE_URL,
+  process.env.SUPABASE_KEY
 );
 
 const currencyNames = {
@@ -15,58 +15,91 @@ const currencyNames = {
 };
 
 export default async function handler(req, res) {
-  const { pathname } = new URL(req.url, `http://${req.headers.host}`);
+  const url = new URL(req.url, `http://${req.headers.host}`);
+  const pathname = url.pathname;
 
- 
-  if (pathname === "/api/convert") {
-    const { from, to, amount } = req.query;
+  // ======================
+  // CONVERT
+  // ======================
+  if (pathname === "/api/convert" && req.method === "GET") {
+    const from = url.searchParams.get("from");
+    const to = url.searchParams.get("to");
+    const amount = url.searchParams.get("amount");
 
-    const response = await fetch(
-      `https://api.frankfurter.app/latest?from=${from}&to=${to}`
-    );
-    const data = await response.json();
+    try {
+      const response = await fetch(
+        `https://api.frankfurter.app/latest?from=${from}&to=${to}`
+      );
+      const data = await response.json();
 
-    const rate = data.rates[to];
-    const result = (rate * amount).toFixed(2);
+      const rate = data.rates[to];
 
-    return res.json({
-      fromCurrency: currencyNames[from],
-      toCurrency: currencyNames[to],
-      rate,
-      result,
-      date: data.date
-    });
-  }
-
- 
-  if (pathname === "/api/history" && req.method === "POST") {
-    const body = req.body;
-
-    const { error } = await supabase.from("conversion_history").insert([
-      {
-        from_currency: body.from,
-        to_currency: body.to,
-        amount: body.amount,
-        result: body.result,
-        date: body.date
+      if (!rate) {
+        return res.status(400).json({ error: "Currency not supported" });
       }
-    ]);
 
-    if (error) return res.status(500).json({ error });
+      const result = (rate * amount).toFixed(2);
 
-    return res.json({ message: "Saved" });
+      return res.status(200).json({
+        fromCurrency: currencyNames[from],
+        toCurrency: currencyNames[to],
+        rate,
+        result,
+        date: data.date
+      });
+
+    } catch (err) {
+      return res.status(500).json({ error: "Convert failed" });
+    }
   }
 
-  
+  // ======================
+  // POST HISTORY
+  // ======================
+  if (pathname === "/api/history" && req.method === "POST") {
+    try {
+      const body = req.body;
+
+      const { error } = await supabase.from("conversion_history").insert([
+        {
+          from_currency: body.from,
+          to_currency: body.to,
+          amount: Number(body.amount),
+          result: Number(body.result),
+          date: body.date
+        }
+      ]);
+
+      if (error) {
+        return res.status(500).json({ error: error.message });
+      }
+
+      return res.status(200).json({ message: "Saved" });
+
+    } catch (err) {
+      return res.status(500).json({ error: "Insert failed" });
+    }
+  }
+
+  // ======================
+  // GET HISTORY
+  // ======================
   if (pathname === "/api/history" && req.method === "GET") {
-    const { data, error } = await supabase
-      .from("conversion_history")
-      .select("*")
-      .order("id", { ascending: false });
+    try {
+      const { data, error } = await supabase
+        .from("conversion_history")
+        .select("*")
+        .order("id", { ascending: false });
 
-    if (error) return res.status(500).json({ error });
+      if (error) {
+        return res.status(500).json({ error: error.message });
+      }
 
-    return res.json(data);
+      return res.status(200).json(data);
+
+    } catch (err) {
+      return res.status(500).json({ error: "Fetch failed" });
+    }
   }
 
   return res.status(404).json({ error: "Not found" });
