@@ -1,0 +1,64 @@
+
+body {
+  margin: 0; 
+  font-family: Arial, sans-serif;
+  background-color: antiquewhite;
+  text-align: center;
+}
+
+.nav {
+  background-color: aquamarine;
+  text-align: center;
+  padding: 12px;
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+}
+.nav a {
+  text-decoration: solid;
+  color: blue;
+}
+.nav a:hover {
+  background-color: rgb(139, 147, 147);
+}
+
+
+h1 {
+  background-color: aqua;
+  color: black;
+  padding: 20px;
+  margin: 0;
+}
+
+h2 {
+  padding: 20px;
+  background-color: aqua;
+  color: black;
+  margin-top: 5px; 
+}
+
+.form {
+  display: inline-block;
+  background: white;
+  padding: 20px;
+  border-radius: 10px;
+}
+
+select, input {
+  margin: 10px;
+  padding: 8px;
+}
+
+button {
+  padding: 10px 15px;
+  background: #007BFF;
+  color: white;
+  border: none;
+  cursor: pointer;
+}
+
+.result {
+  margin-top: 20px;
+  padding: 20px;
+  background-color: aqua;
+}
