@@ -1,3 +1,12 @@
+const currencyNames = {
+  USD: "US Dollar",
+  EUR: "Euro",
+  GBP: "British Pound",
+  AUD: "Australian Dollar",
+  CAD: "Canadian Dollar",
+  JPY: "Japanese Yen"
+};
+
 export default async function handler(req, res) {
   const { from, to, amount } = req.query;
 
@@ -16,6 +25,8 @@ export default async function handler(req, res) {
     const result = (rate * amount).toFixed(2);
 
     return res.status(200).json({
+      fromCurrency: currencyNames[from],
+      toCurrency: currencyNames[to],
       rate,
       result,
       date: data.date
