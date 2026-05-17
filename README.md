@@ -50,3 +50,5 @@ This manual is intended for developers who will continue development of this sys
 ```bash
 git clone <your-repo-link>
 cd <project-folder>
+INSTALL REQUIREMENTS.
+npm install @supabase/supabase-js
